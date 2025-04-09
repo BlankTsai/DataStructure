@@ -12,3 +12,6 @@
 [DRai.py](https://github.com/BlankTsai/DataStructure/blob/main/DRai.py)
 
 ![HW2Resp](https://github.com/BlankTsai/DataStructure/blob/main/images/HW2exV2.png)
+
+## HW3
+[redditAI.py](https://github.com/BlankTsai/DataStructure/blob/main/postAIrdezVer.py)
