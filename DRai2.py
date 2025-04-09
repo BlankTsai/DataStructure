@@ -1,0 +1,116 @@
+import os
+import asyncio
+import pandas as pd
+from dotenv import load_dotenv
+import sys
+
+# 根據你的專案結構調整下列 import
+from autogen_agentchat.agents import AssistantAgent, UserProxyAgent
+from autogen_agentchat.conditions import TextMentionTermination
+from autogen_agentchat.teams import RoundRobinGroupChat
+from autogen_agentchat.messages import TextMessage
+from autogen_ext.models.openai import OpenAIChatCompletionClient
+from autogen_ext.agents.web_surfer import MultimodalWebSurfer
+
+load_dotenv()
+
+async def process_chunk(chunk, start_idx, total_records, model_client, termination_condition):
+    """
+    處理單一批次資料：
+      - 將該批次資料轉成 dict 格式
+      - 組出提示，要求各代理人根據使用者輸入的知識名詞進行分析，
+        並提供完整的學習內容與建議。
+      - 請 MultimodalWebSurfer 搜尋外部網站，找出相關知識名詞的最新資訊與資源。
+      - 收集所有回覆訊息並返回。
+    """
+    # 將資料轉成 dict 格式
+    chunk_data = chunk.to_dict(orient='records')
+    prompt = (
+        f"目前正在處理第 {start_idx} 至 {start_idx + len(chunk) - 1} 筆資料（共 {total_records} 筆）。\n"
+        f"以下為該批次資料（使用者輸入的知識名詞）:\n{chunk_data}\n\n"
+        "請根據以上資料進行分析，並提供完整的知識學習建議。"
+        "其中請特別注意：\n"
+        "  1. 對該知識名詞提供清晰的定義與解釋；\n"
+        "  2. 延伸建議：根據該知識名詞，推薦可以進一步學習的相關知識或領域；\n"
+        "  3. 實際應用：說明該知識如何應用在現實生活中，並提供具體範例；\n"
+        "  4. 請 MultimodalWebSurfer 搜尋外部網站，找出與該知識名詞相關的最新資訊或學習資源，\n"
+        "     並將搜尋結果整合進回覆中；\n"
+        "  5. 最後請生成 3-5 個簡單的基本觀念題目（選擇題或問答題），以確認使用者是否理解該知識。\n"
+        "請各代理人協同合作，提供一份完整、易懂且具學習價值的回覆。"
+    )
+    
+    # 為每個批次建立新的 agent 與 team 實例
+    local_data_agent = AssistantAgent("data_agent", model_client)
+    local_web_surfer = MultimodalWebSurfer("web_surfer", model_client)
+    local_assistant = AssistantAgent("assistant", model_client)
+    local_user_proxy = UserProxyAgent("user_proxy")
+    local_team = RoundRobinGroupChat(
+        [local_data_agent, local_web_surfer, local_assistant, local_user_proxy],
+        termination_condition=termination_condition
+    )
+    
+    messages = []
+    async for event in local_team.run_stream(task=prompt):
+        if isinstance(event, TextMessage):
+            print(f"[{event.source}] => {event.content}\n")
+            messages.append({
+                "batch_start": start_idx,
+                "batch_end": start_idx + len(chunk) - 1,
+                "source": event.source,
+                "content": event.content,
+                "type": event.type,
+                "prompt_tokens": event.models_usage.prompt_tokens if event.models_usage else None,
+                "completion_tokens": event.models_usage.completion_tokens if event.models_usage else None
+            })
+    return messages
+
+async def main():
+    if len(sys.argv) < 2:
+        print("Usage: python DRai.py <path_to_csv>")
+        sys.exit(1)
+    
+    input_csv = sys.argv[1]
+    output_csv = "knowledge_learning_log.csv"
+    if os.path.exists(output_csv):
+        os.remove(output_csv)
+    
+    gemini_api_key = os.environ.get("GEMINI_API_KEY")
+    if not gemini_api_key:
+        raise ValueError("請設定環境變數 GEMINI_API_KEY")
+    
+    # 初始化模型用戶端
+    model_client = OpenAIChatCompletionClient(
+        model="gemini-2.0-flash",
+        api_key=gemini_api_key,
+    )
+    
+    termination_condition = TextMentionTermination("exit")
+    
+    # 讀取 CSV 並分批處理
+    chunk_size = 5  # 每批次處理 5 筆資料
+    chunks = list(pd.read_csv(input_csv, chunksize=chunk_size))
+    total_records = sum(chunk.shape[0] for chunk in chunks)
+    
+    # 使用 map 和 asyncio.gather 處理批次
+    tasks = list(map(
+        lambda idx_chunk: process_chunk(
+            idx_chunk[1],
+            idx_chunk[0] * chunk_size,
+            total_records,
+            model_client,
+            termination_condition
+        ),
+        enumerate(chunks)
+    ))
+    
+    results = await asyncio.gather(*tasks)
+    # 將所有批次的訊息平坦化
+    all_messages = [msg for batch in results for msg in batch]
+    
+    # 儲存結果
+    df_log = pd.DataFrame(all_messages)
+    df_log.to_csv(output_csv, index=False, encoding="utf-8-sig")
+    print(f"已將所有學習建議對話紀錄輸出為 {output_csv}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
