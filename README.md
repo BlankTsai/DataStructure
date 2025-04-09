@@ -15,3 +15,5 @@
 
 ## HW3
 [redditAI.py](https://github.com/BlankTsai/DataStructure/blob/main/postAIrdezVer.py)
+
+![HW3Resp](https://github.com/BlankTsai/DataStructure/blob/main/images/HW3.png)
