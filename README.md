@@ -9,3 +9,4 @@
 ![StructureDesign](https://github.com/BlankTsai/DataStructure/blob/main/images/AiAgentStructureDesign.png)
 
 ## HW2
+[DRai.py](https://github.com/BlankTsai/DataStructure/blob/main/DRai.py)
