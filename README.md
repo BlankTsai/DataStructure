@@ -24,4 +24,4 @@
 [HW4.py](https://github.com/BlankTsai/DataStructure/blob/main/postAIrdezVer.py)
 
 PDF檔案：
-[knowledgeOutput.py](https://github.com/BlankTsai/DataStructure/blob/main/postAIrdezVer.py)
+[knowledgeOutput.py](https://github.com/BlankTsai/DataStructure/blob/main/knowledgeOutput.pdf)
