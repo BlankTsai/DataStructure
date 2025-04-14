@@ -17,3 +17,11 @@
 [redditAI.py](https://github.com/BlankTsai/DataStructure/blob/main/postAIrdezVer.py)
 
 ![HW3Resp](https://github.com/BlankTsai/DataStructure/blob/main/images/HW3.png)
+
+## HW4
+作業描述：第四次作業我將前幾次的作業結合，透過PDF生成器將AI Agent生成的CSV檔案轉成PDF後，將PDF生成一個暫存連結，並透過Playwright自動操控將PDF連結PO文到個人版面上
+
+[HW4.py](https://github.com/BlankTsai/DataStructure/blob/main/postAIrdezVer.py)
+
+PDF檔案：
+[knowledgeOutput.py](https://github.com/BlankTsai/DataStructure/blob/main/postAIrdezVer.py)
