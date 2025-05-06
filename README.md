@@ -27,3 +27,8 @@ PDF檔案：
 [knowledgeOutput.py](https://github.com/BlankTsai/DataStructure/blob/main/knowledgeOutput.pdf)
 
 ![HW4Resp](https://github.com/BlankTsai/DataStructure/blob/main/images/HW4.png)
+
+## HW5
+[HW5](https://github.com/BlankTsai/DataStructure/tree/main/HW5)
+
+![HW5pic](https://github.com/BlankTsai/DataStructure/blob/main/HW5/HW5pic.png)
