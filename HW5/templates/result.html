@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>報表結果</title>
+    <style>
+        body { font-family: 'Microsoft YaHei', Arial, sans-serif; margin: 40px; }
+        h1 { color: #333; }
+        .result-container { max-width: 800px; margin: 0 auto; }
+        pre { background-color: #f9f9f9; padding: 15px; border: 1px solid #ccc; white-space: pre-wrap; }
+        .error { color: red; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="result-container">
+        <h1>報表結果</h1>
+        {% if error %}
+            <p class="error">錯誤：{{ error }}</p>
+        {% else %}
+            <p><a href="/download/{{ pdf_path }}">下載 PDF 報表</a></p>
+        {% endif %}
+        <h2>回應內容</h2>
+        <pre>{{ response_text }}</pre>
+        <p><a href="/"><button>返回首頁</button></a></p>
+    </div>
+</body>
+</html>
